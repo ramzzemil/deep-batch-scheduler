@@ -1,6 +1,6 @@
 import numpy as np
 import tensorflow as tf
-import gym
+import gymnasium
 import os
 import sys
 import time

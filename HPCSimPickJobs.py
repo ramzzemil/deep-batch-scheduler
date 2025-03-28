@@ -13,10 +13,10 @@ import numpy as np
 import tensorflow as tf
 import scipy.signal
 
-import gym
-from gym import spaces
-from gym.spaces import Box, Discrete
-from gym.utils import seeding
+import gymnasium
+from gymnasium import spaces
+from gymnasium.spaces import Box, Discrete
+from gymnasium.utils import seeding
 
 MAX_QUEUE_SIZE = 128
 MLP_SIZE = 256
@@ -63,7 +63,7 @@ def discount_cumsum(x, discount):
     return scipy.signal.lfilter([1], [1, float(-discount)], x[::-1], axis=0)[::-1]
 
 
-class HPCEnv(gym.Env):
+class HPCEnv(gymnasium.Env):
     def __init__(self,shuffle=False, backfil=False, skip=False, job_score_type=0, batch_job_slice=0, build_sjf=False):  # do nothing and return. A workaround for passing parameters to the environment
         super(HPCEnv, self).__init__()
         print("Initialize Simple HPC Env")
@@ -158,7 +158,7 @@ class HPCEnv(gym.Env):
                 self.next_arriving_job_idx = self.start + 1
 
                 if self.enable_preworkloads:
-                    self.gen_preworkloads(job_sequence_size + self.np_random.randint(job_sequence_size))
+                    self.gen_preworkloads(job_sequence_size + self.np_random.integers(job_sequence_size))
 
                 self.sjf_scores.append(sum(self.schedule_curr_sequence_reset(self.sjf_score).values()))
 
@@ -233,7 +233,7 @@ class HPCEnv(gym.Env):
 
     def gen_preworkloads(self, size):
         # Generate some running jobs to randomly fill the cluster.
-        # size = self.np_random.randint(2 * job_sequence_size)
+        # size = self.np_random.integers(2 * job_sequence_size)
         running_job_size = size
         for i in range(running_job_size):
             _job = self.loads[self.start - i - 1]
@@ -245,7 +245,7 @@ class HPCEnv(gym.Env):
             job_tmp.run_time = runtime_of_job
             if self.cluster.can_allocated(job_tmp):
                 self.running_jobs.append(job_tmp)
-                job_tmp.scheduled_time = max(0, (self.current_timestamp - random.randint(0, max(runtime_of_job, 1))))
+                job_tmp.scheduled_time = max(0, (self.current_timestamp - random.integers(0, max(runtime_of_job, 1))))
                 # job_tmp.scheduled_time = max(0, (self.current_timestamp - runtime_of_job/2))
                 job_tmp.allocated_machines = self.cluster.allocate(job_tmp.job_id, job_tmp.request_number_of_processors)
                 self.pre_workloads.append(job_tmp)
@@ -288,17 +288,17 @@ class HPCEnv(gym.Env):
             while not done:
                 # randomly sample a sequence of jobs from workload (self.start_idx_last_reset + 1) % (self.loads.size() - 2 * job_sequence_size
                 if self.batch_job_slice == 0:
-                    self.start = self.np_random.randint(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
+                    self.start = self.np_random.integers(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
                 else:
-                    self.start = self.np_random.randint(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
+                    self.start = self.np_random.integers(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
 
                 if self.sjf_scores[self.start] > 10 and self.sjf_scores[self.start] < 150:
                     done = True
         else:
             if self.batch_job_slice == 0:
-                self.start = self.np_random.randint(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
+                self.start = self.np_random.integers(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
             else:
-                self.start = self.np_random.randint(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
+                self.start = self.np_random.integers(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
 
         self.start_idx_last_reset = self.start
         self.num_job_in_batch = job_sequence_size
@@ -308,7 +308,7 @@ class HPCEnv(gym.Env):
         self.next_arriving_job_idx = self.start + 1
 
         if self.enable_preworkloads:
-            self.gen_preworkloads(job_sequence_size + self.np_random.randint(job_sequence_size))
+            self.gen_preworkloads(job_sequence_size + self.np_random.integers(job_sequence_size))
 
         self.scheduled_scores.append(sum(self.schedule_curr_sequence_reset(self.sjf_score).values()))
         self.scheduled_scores.append(sum(self.schedule_curr_sequence_reset(self.f1_score).values()))
@@ -350,9 +350,9 @@ class HPCEnv(gym.Env):
         job_sequence_size = num
         assert self.batch_job_slice == 0 or self.batch_job_slice>=job_sequence_size
         if self.batch_job_slice == 0:
-            self.start = self.np_random.randint(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
+            self.start = self.np_random.integers(job_sequence_size, (self.loads.size() - job_sequence_size - 1))
         else:
-            self.start = self.np_random.randint(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
+            self.start = self.np_random.integers(job_sequence_size, (self.batch_job_slice - job_sequence_size - 1))
         #self.start = start
         self.start_idx_last_reset = self.start
         self.num_job_in_batch = job_sequence_size

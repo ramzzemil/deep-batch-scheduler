@@ -6,10 +6,10 @@ import tensorflow as tf
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph
 
-import gym
-from gym import spaces
-from gym.spaces import Box, Discrete
-from gym.utils import seeding
+import gymnasium
+from gymnasium import spaces
+from gymnasium.spaces import Box, Discrete
+from gymnasium.utils import seeding
 
 import random
 import math
